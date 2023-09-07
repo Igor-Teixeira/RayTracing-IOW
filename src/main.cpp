@@ -2,62 +2,47 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
-#include <string>
-#include <fstream>
-
-struct PixelData
-{
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-};
-
-static void WritePPM(const std::string& filename, unsigned int width,
-    unsigned int height, const std::vector<PixelData>& pixels)
-{
-    std::ofstream ppmFile{filename, std::ios::binary};
-
-    if (!ppmFile.is_open()) {
-        std::cerr << "Failed to open PPM file for writing: [" << filename << "]" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    ppmFile << "P3\n" << width << " " << height << "\n255\n";
-
-    for (unsigned int j = 0; j < height; ++j) {
-        for (unsigned int i = 0; i < width; ++i) {
-            const auto& pixel = pixels[j * width + i];
-
-            ppmFile <<
-                (unsigned int)pixel.r << " " <<
-                (unsigned int)pixel.g << " " <<
-                (unsigned int)pixel.b << "\n";
-        }
-    }
-}
+#include "ppm.hpp"
+#include "rtmath.hpp"
 
 int main()
 {
     constexpr unsigned int IMAGE_WIDTH = 256;
     constexpr unsigned int IMAGE_HEIGHT = 256;
+    const char* filename = "RayTracing.ppm";
 
-    std::vector<PixelData> pixels(IMAGE_WIDTH * IMAGE_HEIGHT);
+    struct RGB
+    {
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+    };
+
+    std::vector<RGB> pixels(IMAGE_WIDTH * IMAGE_HEIGHT);
 
     for (unsigned int j = 0; j < IMAGE_HEIGHT; ++j) {
+        std::cout << "\rScanlines remaining: " << IMAGE_HEIGHT - 1 - j << " " << std::flush;
+
         for (unsigned int i = 0; i < IMAGE_WIDTH; ++i) {
-            const double r = double(i) / (IMAGE_WIDTH - 1);
-            const double g = double(j) / (IMAGE_HEIGHT - 1);
-            const double b = 0.5;
+            const float r = float(i) / (IMAGE_WIDTH - 1);
+            const float g = float(j) / (IMAGE_HEIGHT - 1);
+            const float b = 0.5f;
 
-            const uint8_t ir = static_cast<uint8_t>(255.0 * r);
-            const uint8_t ig = static_cast<uint8_t>(255.0 * g);
-            const uint8_t ib = static_cast<uint8_t>(255.0 * b);
+            RGB& pixel = pixels[j * IMAGE_WIDTH + i];
 
-            pixels[j * IMAGE_WIDTH + i] = { ir, ig, ib };
+            pixel.r = static_cast<uint8_t>(255.0f * r);
+            pixel.g = static_cast<uint8_t>(255.0f * g);
+            pixel.b = static_cast<uint8_t>(255.0f * b);
         }
     }
 
-    WritePPM("RayTracedImage.ppm", IMAGE_WIDTH, IMAGE_HEIGHT, pixels);
+    std::cout << "\rWriting PPM file...          " << std::flush;
 
+    if (!RT::WritePPM(filename, IMAGE_WIDTH, IMAGE_HEIGHT, reinterpret_cast<const uint8_t*>(pixels.data()))) {
+        std::cerr << "Failed to write PPM file: " << filename << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    std::cout << "\rDone!                      \n" << std::flush;
     return EXIT_SUCCESS;
 }
