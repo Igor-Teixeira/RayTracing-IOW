@@ -3,5 +3,5 @@
 
 namespace RT
 {
-    bool WritePPM(const char* filename, unsigned int width, unsigned int height, const uint8_t* pixels);
+    bool WritePPM(const char* filename, unsigned int width, unsigned int height, const float* pixels);
 }

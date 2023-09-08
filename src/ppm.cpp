@@ -3,7 +3,7 @@
 
 namespace RT
 {
-    bool WritePPM(const char* filename, unsigned int width, unsigned int height, const uint8_t* pixels)
+    bool WritePPM(const char* filename, unsigned int width, unsigned int height, const float* pixels)
     {
         // Bytes per pixels
         constexpr unsigned int bpp = 3;
@@ -20,9 +20,9 @@ namespace RT
             for (unsigned int i = 0; i < width * bpp; i += bpp) {
                 const unsigned int index = j * width * bpp + i;
 
-                const unsigned int& r = static_cast<unsigned int>(pixels[index + 0]);
-                const unsigned int& g = static_cast<unsigned int>(pixels[index + 1]);
-                const unsigned int& b = static_cast<unsigned int>(pixels[index + 2]);
+                const unsigned int& r = static_cast<unsigned int>(255.0f * pixels[index + 0]);
+                const unsigned int& g = static_cast<unsigned int>(255.0f * pixels[index + 1]);
+                const unsigned int& b = static_cast<unsigned int>(255.0f * pixels[index + 2]);
 
                 ppmFile << r << " " << g << " " << b << "\n";
             }

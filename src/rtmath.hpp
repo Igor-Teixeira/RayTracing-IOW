@@ -49,7 +49,18 @@ namespace RT
         return v / Length(v);
     }
 
+    inline const Vec3 Lerp(const Vec3& a, const Vec3& b, float t)
+    {
+        return (1.0f - t) * a + t * b;
+    }
+
+    inline const float Dot(const Vec3& a, const Vec3& b)
+    {
+        return a.x * b.x + a.y * b.y + a.z * b.z;
+    }
+
     using Point3 = Vec3;
+    using Color = Vec3;
 
     class Ray
     {

@@ -2,39 +2,74 @@
 #include <iostream>
 #include <vector>
 #include "ppm.hpp"
+#include "rtmath.hpp"
 
 namespace RT
 {
+    bool HitSphere(const Point3& center, float radius, const Ray& ray)
+    {
+        const Vec3& oc = ray.origin() - center;
+
+        const float a = Dot(ray.direction(), ray.direction());
+        const float b = 2.0f * Dot(oc, ray.direction());
+        const float c = Dot(oc, oc) - radius * radius;
+
+        const float discriminant = b * b - 4.0f * a * c;
+
+        return (discriminant >= 0.0f);
+    }
+
+    Color TraceRay(const Ray& ray)
+    {
+        if (HitSphere(Vec3{0.0f, 0.0f, -1.0f}, 0.5f, ray)) {
+            return Color{1.0f, 0.0f, 0.0f};
+        }
+
+        const Vec3 unitRayDirection = Normalize(ray.direction());
+        const float t = 0.5f * (unitRayDirection.y + 1.0f);
+
+        return Lerp(Vec3{1.0f}, Vec3{0.0f, 0.0f, 1.0f}, t);
+    }
+
     bool RayTrace(unsigned int imageWidth, unsigned int imageHeight, const char* filename)
     {
-        struct RGB
-        {
-            uint8_t r;
-            uint8_t g;
-            uint8_t b;
-        };
+        const float focalLength = 1.0f;
+        const float viewportHeight = 2.0f;
+        const float viewportWidth = viewportHeight * (static_cast<float>(imageWidth) / imageHeight);
 
-        std::vector<RGB> pixels(imageWidth * imageHeight);
+        const Point3 cameraCenter{0.0f};
+
+        const Vec3 viewportU{viewportWidth, 0.0f, 0.0f};
+        const Vec3 viewportV{0.0f, -viewportHeight, 0.0f};
+
+        const Vec3 pixelDeltaU = viewportU / static_cast<float>(imageWidth);
+        const Vec3 pixelDeltaV = viewportV / static_cast<float>(imageHeight);
+
+        const Vec3 viewportUpperLeft =
+            cameraCenter - Vec3(0.0f, 0.0f, focalLength) - (viewportU * 0.5f) - (viewportV * 0.5f);
+
+        const Vec3 pixel00Location = viewportUpperLeft + (pixelDeltaU + pixelDeltaV) * 0.5f;
+
+        std::vector<Color> pixels(imageWidth * imageHeight);
 
         for (unsigned int j = 0; j < imageHeight; ++j) {
-            std::cout << "\rScanlines remaining: " << imageHeight - 1 - j << " " << std::flush;
+            std::cout << "\rScanlines remaining: " << imageHeight - j << " " << std::flush;
 
             for (unsigned int i = 0; i < imageWidth; ++i) {
-                const float r = float(i) / (imageWidth - 1);
-                const float g = float(j) / (imageHeight - 1);
-                const float b = 0.5f;
+                const Vec3 pixelCenter = pixel00Location + (static_cast<float>(i) * pixelDeltaU) + (static_cast<float>(j) * pixelDeltaV);
+                const Vec3 rayDirection = pixelCenter - cameraCenter;
 
-                RGB& pixel = pixels[j * imageWidth + i];
+                const Ray ray{cameraCenter, rayDirection};
 
-                pixel.r = static_cast<uint8_t>(255.0f * r);
-                pixel.g = static_cast<uint8_t>(255.0f * g);
-                pixel.b = static_cast<uint8_t>(255.0f * b);
+                const Color pixelColor = TraceRay(ray);
+
+                pixels[j * imageWidth + i] = pixelColor;
             }
         }
 
         std::cout << "\rWriting PPM file...          " << std::flush;
 
-        if (!RT::WritePPM(filename, imageWidth, imageHeight, reinterpret_cast<const uint8_t*>(pixels.data()))) {
+        if (!RT::WritePPM(filename, imageWidth, imageHeight, reinterpret_cast<const float*>(pixels.data()))) {
             std::cerr << "Failed to write PPM file: " << filename << std::endl;
             return false;
         }
