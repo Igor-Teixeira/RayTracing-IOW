@@ -85,7 +85,7 @@ namespace RT
 
         HitInfo hitInfo;
         if (world.Hit(ray, Interval{0.001f, FltInfinity}, &hitInfo)) {
-            const Vec3 newDirection = RandomDirectionInHemisphere(hitInfo.normal);
+            const Vec3 newDirection = hitInfo.normal + RandomDirectionInHemisphere(hitInfo.normal);
             return 0.5f * TraceRay(Ray{hitInfo.point, newDirection}, depth - 1, world);
         }
 
