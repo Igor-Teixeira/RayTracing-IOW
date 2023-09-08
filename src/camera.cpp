@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include "ppm.hpp"
 #include "hittable.hpp"
 #include "camera.hpp"
@@ -50,6 +51,15 @@ namespace RT
                 }
 
                 pixelColor /= m_SamplesPerPixel;
+
+                // Gamma correct
+                pixelColor.x = std::sqrt(pixelColor.x);
+                pixelColor.y = std::sqrt(pixelColor.y);
+                pixelColor.z = std::sqrt(pixelColor.z);
+
+                pixelColor.x = std::clamp(pixelColor.x, 0.0f, 1.0f);
+                pixelColor.y = std::clamp(pixelColor.y, 0.0f, 1.0f);
+                pixelColor.z = std::clamp(pixelColor.z, 0.0f, 1.0f);
 
                 pixels[j * m_ImageWidth + i] = pixelColor;
             }
