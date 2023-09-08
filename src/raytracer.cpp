@@ -6,7 +6,7 @@
 
 namespace RT
 {
-    bool HitSphere(const Point3& center, float radius, const Ray& ray)
+    float HitSphere(const Point3& center, float radius, const Ray& ray)
     {
         const Vec3& oc = ray.origin() - center;
 
@@ -16,19 +16,27 @@ namespace RT
 
         const float discriminant = b * b - 4.0f * a * c;
 
-        return (discriminant >= 0.0f);
+        if (discriminant < 0.0f) {
+            return -1.0f;
+        }
+        else {
+            return (-b - std::sqrt(discriminant)) / (2.0f * a);
+        }
     }
 
     Color TraceRay(const Ray& ray)
     {
-        if (HitSphere(Vec3{0.0f, 0.0f, -1.0f}, 0.5f, ray)) {
-            return Color{1.0f, 0.0f, 0.0f};
+        const float t = HitSphere(Vec3{0.0f, 0.0f, -1.0f}, 0.5f, ray);
+
+        if (t > 0.0f) {
+            const Vec3 normal = Normalize(ray.at(t) - Vec3{0.0f, 0.0f, -1.0f});
+            return 0.5f * Color{normal + Vec3{1.0f}};
         }
 
         const Vec3 unitRayDirection = Normalize(ray.direction());
-        const float t = 0.5f * (unitRayDirection.y + 1.0f);
+        const float a = 0.5f * (unitRayDirection.y + 1.0f);
 
-        return Lerp(Vec3{1.0f}, Vec3{0.0f, 0.0f, 1.0f}, t);
+        return Lerp(Vec3{1.0f}, Vec3{0.0f, 0.0f, 1.0f}, a);
     }
 
     bool RayTrace(unsigned int imageWidth, unsigned int imageHeight, const char* filename)

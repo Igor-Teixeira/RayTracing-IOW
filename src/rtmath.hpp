@@ -75,7 +75,7 @@ namespace RT
         const Point3& origin() const { return m_Origin; }
         const Vec3& direction() const { return m_Direction; }
 
-        const Point3& at(float t) const { return t * m_Direction + m_Origin; }
+        const Point3 at(float t) const { return t * m_Direction + m_Origin; }
 
     private:
         const Point3 m_Origin;
