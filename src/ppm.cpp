@@ -5,7 +5,7 @@ namespace RT
 {
     bool WritePPM(const char* filename, unsigned int width, unsigned int height, const float* pixels)
     {
-        // Bytes per pixels
+        // Bytes per pixel
         constexpr unsigned int bpp = 3;
 
         std::ofstream ppmFile{filename, std::ios::binary};

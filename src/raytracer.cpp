@@ -1,36 +1,19 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+#include <limits>
 #include "ppm.hpp"
 #include "rtmath.hpp"
+#include "hittable_list.hpp"
+#include "sphere.hpp"
 
 namespace RT
 {
-    float HitSphere(const Point3& center, float radius, const Ray& ray)
+    Color TraceRay(const Ray& ray, const Hittable& world)
     {
-        const Vec3& oc = ray.origin() - center;
-
-        const float a = Dot(ray.direction(), ray.direction());
-        const float b = 2.0f * Dot(oc, ray.direction());
-        const float c = Dot(oc, oc) - radius * radius;
-
-        const float discriminant = b * b - 4.0f * a * c;
-
-        if (discriminant < 0.0f) {
-            return -1.0f;
-        }
-        else {
-            return (-b - std::sqrt(discriminant)) / (2.0f * a);
-        }
-    }
-
-    Color TraceRay(const Ray& ray)
-    {
-        const float t = HitSphere(Vec3{0.0f, 0.0f, -1.0f}, 0.5f, ray);
-
-        if (t > 0.0f) {
-            const Vec3 normal = Normalize(ray.at(t) - Vec3{0.0f, 0.0f, -1.0f});
-            return 0.5f * Color{normal + Vec3{1.0f}};
+        HitInfo hitInfo;
+        if (world.Hit(ray, 0.0f, std::numeric_limits<float>::infinity(), &hitInfo)) {
+            return 0.5f * (hitInfo.normal + Vec3{1.0f});
         }
 
         const Vec3 unitRayDirection = Normalize(ray.direction());
@@ -58,6 +41,10 @@ namespace RT
 
         const Vec3 pixel00Location = viewportUpperLeft + (pixelDeltaU + pixelDeltaV) * 0.5f;
 
+        HittableList world;
+        world.Add<Sphere>(Point3{0.0f, 0.0f, -1.0f}, 0.5f);
+        world.Add<Sphere>(Point3{0.0f, -100.5f, -1.0f}, 100.0f);
+
         std::vector<Color> pixels(imageWidth * imageHeight);
 
         for (unsigned int j = 0; j < imageHeight; ++j) {
@@ -69,7 +56,7 @@ namespace RT
 
                 const Ray ray{cameraCenter, rayDirection};
 
-                const Color pixelColor = TraceRay(ray);
+                const Color pixelColor = TraceRay(ray, world);
 
                 pixels[j * imageWidth + i] = pixelColor;
             }
