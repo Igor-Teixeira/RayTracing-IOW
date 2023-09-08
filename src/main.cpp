@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include <iostream>
-#include "raytracer.hpp"
+#include "hittable_list.hpp"
+#include "sphere.hpp"
+#include "camera.hpp"
 
 static void PrintUsage()
 {
@@ -32,7 +34,13 @@ int main(int argc, char* argv[])
 
     std::cout << "Raytracing [" << imageWidth << "x" << imageHeight << "] image to file: " << filename << std::endl;
 
-    if (!RT::RayTrace(imageWidth, imageHeight, filename)) {
+    RT::HittableList world;
+    world.Add<RT::Sphere>(RT::Point3{0.0f, 0.0f, -1.0f}, 0.5f);
+    world.Add<RT::Sphere>(RT::Point3{0.0f, -100.5f, -1.0f}, 100.0f);
+
+    RT::Camera camera{imageWidth, imageHeight, RT::Point3{0.0f}};
+
+    if (!camera.Render(filename, world)) {
         return EXIT_FAILURE;
     }
 
