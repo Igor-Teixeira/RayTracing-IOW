@@ -18,15 +18,15 @@ namespace RT
             m_Objects.emplace_back(std::move(ptr));
         }
 
-        virtual bool Hit(const Ray& ray, float tmin, float tmax, HitInfo* hitInfo) const override
+        virtual bool Hit(const Ray& ray, const Interval& rayInterval, HitInfo* hitInfo) const override
         {
             bool anyHits = false;
-            float closestHit = tmax;
+            float closestHit = rayInterval.Max();
 
             HitInfo info;
 
             for (auto& object : m_Objects) {
-                if (object->Hit(ray, tmin, closestHit, &info)) {
+                if (object->Hit(ray, Interval{rayInterval.Min(), closestHit}, &info)) {
                     anyHits = true;
                     closestHit = info.t;
                     *hitInfo = info;

@@ -11,7 +11,7 @@ namespace RT
         {
         }
 
-        virtual bool Hit(const Ray& ray, float tmin, float tmax, HitInfo* hitInfo) const override
+        virtual bool Hit(const Ray& ray, const Interval& rayInterval, HitInfo* hitInfo) const override
         {
             const Vec3 oc = ray.origin() - m_Center;
             const float a = LengthSquared(ray.direction());
@@ -28,10 +28,10 @@ namespace RT
 
             float root = (-half_b - sqrtDisc) / a;
 
-            if (root <= tmin || root >= tmax) {
+            if (!rayInterval.Surrounds(root)) {
                 root = (-half_b + sqrtDisc) / a;
 
-                if (root <= tmin || root >= tmax) {
+                if (!rayInterval.Surrounds(root)) {
                     return false;
                 }
             }

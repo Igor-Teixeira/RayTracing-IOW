@@ -22,6 +22,6 @@ namespace RT
     public:
         virtual ~Hittable() = default;
 
-        virtual bool Hit(const Ray& ray, float tmin, float tmax, HitInfo* hitInfo) const = 0;
+        virtual bool Hit(const Ray& ray, const Interval& rayInterval, HitInfo* hitInfo) const = 0;
     };
 }

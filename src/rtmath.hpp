@@ -1,8 +1,12 @@
 #pragma once
 #include <cmath>
+#include <limits>
+#include <numbers>
 
 namespace RT
 {
+    inline auto FltInfinity = std::numeric_limits<float>::infinity();
+
     struct Vec3
     {
         float x;
@@ -26,6 +30,9 @@ namespace RT
         Vec3& operator*=(float rhs) { x *= rhs; y *= rhs; z *= rhs; return *this; }
         Vec3& operator/=(float rhs) { const float inv = 1.0f / rhs; x *= inv; y *= inv; z *= inv; return *this; }
     };
+
+    using Point3 = Vec3;
+    using Color = Vec3;
 
     inline const Vec3 operator+(Vec3 lhs, const Vec3& rhs) { lhs += rhs; return lhs; }
     inline const Vec3 operator-(Vec3 lhs, const Vec3& rhs) { lhs -= rhs; return lhs; }
@@ -59,18 +66,11 @@ namespace RT
         return a.x * b.x + a.y * b.y + a.z * b.z;
     }
 
-    using Point3 = Vec3;
-    using Color = Vec3;
-
     class Ray
     {
     public:
         Ray() = default;
-
-        Ray(const Point3& origin, const Vec3& direction)
-            : m_Origin(origin), m_Direction(direction)
-        {
-        }
+        Ray(const Point3& origin, const Vec3& direction) : m_Origin(origin), m_Direction(direction) {}
 
         const Point3& origin() const { return m_Origin; }
         const Vec3& direction() const { return m_Direction; }
@@ -80,5 +80,25 @@ namespace RT
     private:
         const Point3 m_Origin;
         const Vec3 m_Direction;
+    };
+
+    class Interval
+    {
+    public:
+        Interval() : m_Min(FltInfinity), m_Max(-FltInfinity) {}
+        Interval(float min, float max) : m_Min(min), m_Max(max) {}
+
+        const float Min() const { return m_Min; }
+        const float Max() const { return m_Max; }
+
+        bool Contains(float x) const { return x >= m_Min && x <= m_Max; }
+        bool Surrounds(float x) const { return x > m_Min && x < m_Max; }
+
+        static Interval Empty() { return Interval(FltInfinity, -FltInfinity); }
+        static Interval Universe() { return Interval(-FltInfinity, FltInfinity); }
+
+    private:
+        float m_Min;
+        float m_Max;
     };
 }

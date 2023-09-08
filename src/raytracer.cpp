@@ -12,7 +12,7 @@ namespace RT
     Color TraceRay(const Ray& ray, const Hittable& world)
     {
         HitInfo hitInfo;
-        if (world.Hit(ray, 0.0f, std::numeric_limits<float>::infinity(), &hitInfo)) {
+        if (world.Hit(ray, Interval{0.0f, FltInfinity}, &hitInfo)) {
             return 0.5f * (hitInfo.normal + Vec3{1.0f});
         }
 
