@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <cstdlib>
 #include <limits>
 #include <numbers>
 
@@ -41,12 +42,12 @@ namespace RT
     inline const Vec3 operator*(float lhs, Vec3 rhs) { rhs *= lhs; return rhs; }
     inline const Vec3 operator/(float lhs, Vec3 rhs) { rhs /= lhs; return rhs; }
 
-    inline const float LengthSquared(const Vec3& v)
+    inline float LengthSquared(const Vec3& v)
     {
         return v.x * v.x + v.y * v.y + v.z * v.z;
     }
 
-    inline const float Length(const Vec3& v)
+    inline float Length(const Vec3& v)
     {
         return std::sqrt(LengthSquared(v));
     }
@@ -61,7 +62,7 @@ namespace RT
         return (1.0f - t) * a + t * b;
     }
 
-    inline const float Dot(const Vec3& a, const Vec3& b)
+    inline float Dot(const Vec3& a, const Vec3& b)
     {
         return a.x * b.x + a.y * b.y + a.z * b.z;
     }
@@ -88,11 +89,19 @@ namespace RT
         Interval() : m_Min(FltInfinity), m_Max(-FltInfinity) {}
         Interval(float min, float max) : m_Min(min), m_Max(max) {}
 
-        const float Min() const { return m_Min; }
-        const float Max() const { return m_Max; }
+        float Min() const { return m_Min; }
+        float Max() const { return m_Max; }
 
         bool Contains(float x) const { return x >= m_Min && x <= m_Max; }
         bool Surrounds(float x) const { return x > m_Min && x < m_Max; }
+
+        float Clamp(float x)
+        {
+            if (x < m_Min) { return m_Min; };
+            if (x > m_Max) { return m_Max; };
+
+            return x;
+        }
 
         static Interval Empty() { return Interval(FltInfinity, -FltInfinity); }
         static Interval Universe() { return Interval(-FltInfinity, FltInfinity); }
