@@ -67,6 +67,22 @@ namespace RT
         return a.x * b.x + a.y * b.y + a.z * b.z;
     }
 
+    inline const Vec3 Hadamard(const Vec3& a, const Vec3& b)
+    {
+        return Vec3{a.x * b.x, a.y * b.y, a.z * b.z};
+    }
+
+    inline bool NearZero(const Vec3& v)
+    {
+        constexpr float s = 1.0E-5f;
+        return (std::fabs(v.x) < s) && (std::fabs(v.y) < s) && (std::fabs(v.z) < s);
+    }
+
+    inline const Vec3 Reflect(const Vec3& v, const Vec3& n)
+    {
+        return v - 2.0f * Dot(v, n) * n;
+    }
+
     class Ray
     {
     public:
@@ -79,8 +95,8 @@ namespace RT
         const Point3 at(float t) const { return t * m_Direction + m_Origin; }
 
     private:
-        const Point3 m_Origin;
-        const Vec3 m_Direction;
+        Point3 m_Origin;
+        Vec3 m_Direction;
     };
 
     class Interval
@@ -110,4 +126,12 @@ namespace RT
         float m_Min;
         float m_Max;
     };
+
+    float RandomFloat();
+    float RandomFloat(float min, float max);
+    const Vec3 RandomVec3();
+    const Vec3 RandomVec3(float min, float max);
+
+    const Vec3 RandomVec3InUnitSphere();
+    const Vec3 RandomVec3InHemisphere(const Vec3& normal);
 }

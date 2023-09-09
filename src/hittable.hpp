@@ -3,12 +3,15 @@
 
 namespace RT
 {
+    class Material;
+
     struct HitInfo
     {
         Point3 point;
         Vec3 normal;
         float t;
         bool frontFace;
+        Material* material;
 
         void SetFaceNormal(const Ray& ray, const Vec3& outwardNormal)
         {

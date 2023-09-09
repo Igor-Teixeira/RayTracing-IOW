@@ -1,13 +1,15 @@
 #pragma once
+#include <memory>
 #include "hittable.hpp"
+#include "material.hpp"
 
 namespace RT
 {
     class Sphere : public Hittable
     {
     public:
-        Sphere(const Point3& center, float radius)
-            : m_Center(center), m_Radius(radius)
+        Sphere(const Point3& center, float radius, std::unique_ptr<Material> material)
+            : m_Center(center), m_Radius(radius), m_Material(std::move(material))
         {
         }
 
@@ -40,6 +42,7 @@ namespace RT
             hitInfo->point = ray.at(hitInfo->t);
             const Vec3 outwardNormal = (hitInfo->point - m_Center) / m_Radius;
             hitInfo->SetFaceNormal(ray, outwardNormal);
+            hitInfo->material = m_Material.get();
 
             return true;
         }
@@ -47,5 +50,6 @@ namespace RT
     private:
         Point3 m_Center;
         float m_Radius;
+        std::unique_ptr<Material> m_Material;
     };
 }

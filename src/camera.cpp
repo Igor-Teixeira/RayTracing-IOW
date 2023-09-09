@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include "ppm.hpp"
+#include "material.hpp"
 #include "hittable.hpp"
 #include "camera.hpp"
 
@@ -26,12 +27,6 @@ namespace RT
             m_Position - Vec3(0.0f, 0.0f, focalLength) - (viewportU * 0.5f) - (viewportV * 0.5f);
 
         m_Pixel00Location = viewportUpperLeft + (m_PixelDeltaU + m_PixelDeltaV) * 0.5f;
-
-        std::random_device rd{};
-        std::seed_seq seed{rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd()};
-
-        m_RNG = std::mt19937{seed};
-        m_Dist = std::uniform_real_distribution<float>(0.0f, 1.0f);
     }
 
     bool Camera::Render(const char* filename, const Hittable& world)
@@ -50,12 +45,12 @@ namespace RT
                     pixelColor += TraceRay(ray, m_MaxDepth, world);
                 }
 
-                pixelColor /= m_SamplesPerPixel;
+                pixelColor /= static_cast<float>(m_SamplesPerPixel);
 
                 // Gamma correct
-                pixelColor.x = std::sqrt(pixelColor.x);
-                pixelColor.y = std::sqrt(pixelColor.y);
-                pixelColor.z = std::sqrt(pixelColor.z);
+                pixelColor.x = LinearToGamma(pixelColor.x);
+                pixelColor.y = LinearToGamma(pixelColor.y);
+                pixelColor.z = LinearToGamma(pixelColor.z);
 
                 pixelColor.x = std::clamp(pixelColor.x, 0.0f, 1.0f);
                 pixelColor.y = std::clamp(pixelColor.y, 0.0f, 1.0f);
@@ -77,6 +72,11 @@ namespace RT
         return true;
     }
 
+    float Camera::LinearToGamma(float linear)
+    {
+        return std::pow(linear, 1.0f / 2.2f);
+    }
+
     Color Camera::TraceRay(const Ray& ray, int depth, const Hittable& world)
     {
         if (depth <= 0) {
@@ -84,14 +84,20 @@ namespace RT
         }
 
         HitInfo hitInfo;
+
         if (world.Hit(ray, Interval{0.001f, FltInfinity}, &hitInfo)) {
-            const Vec3 newDirection = hitInfo.normal + RandomDirectionInHemisphere(hitInfo.normal);
-            return 0.5f * TraceRay(Ray{hitInfo.point, newDirection}, depth - 1, world);
+            Ray scattered;
+            Color attenuation;
+
+            if (hitInfo.material->Scatter(ray, hitInfo, &attenuation, &scattered)) {
+                return Hadamard(attenuation, TraceRay(scattered, depth - 1, world));
+            }
+
+            return Color{0.0f};
         }
 
         const Vec3 unitRayDirection = Normalize(ray.direction());
         const float a = 0.5f * (unitRayDirection.y + 1.0f);
-
         return Lerp(Vec3{1.0f}, Vec3{0.5f, 0.7f, 1.0f}, a);
     }
 
@@ -113,48 +119,5 @@ namespace RT
         const float px = -0.5f + RandomFloat();
         const float py = -0.5f + RandomFloat();
         return (px * m_PixelDeltaU) + (py * m_PixelDeltaV);
-    }
-
-    float Camera::RandomFloat()
-    {
-        return m_Dist(m_RNG);
-    }
-
-    float Camera::RandomFloat(float min, float max)
-    {
-        return min + (max - min) * RandomFloat();
-    }
-
-    const Vec3 Camera::RandomVec3()
-    {
-        return Vec3{RandomFloat(), RandomFloat(), RandomFloat()};
-    }
-
-    const Vec3 Camera::RandomVec3(float min, float max)
-    {
-        return Vec3{RandomFloat(min, max), RandomFloat(min, max), RandomFloat(min, max)};
-    }
-
-    const Vec3 Camera::RandomVec3InUnitSphere()
-    {
-        while (true) {
-            const Vec3 v = RandomVec3(-1.0f, 1.0f);
-            const float lengthSquared = LengthSquared(v);
-            if (lengthSquared < 1.0f) {
-                const float factor = 1.0f / std::sqrt(lengthSquared);
-                return v * factor;
-            }
-        }
-    }
-
-    const Vec3 Camera::RandomDirectionInHemisphere(const Vec3& normal)
-    {
-        const Vec3& direction = RandomVec3InUnitSphere();
-        if (Dot(direction, normal) > 0.0f) {
-            return direction;
-        }
-        else {
-            return -direction;
-        }
     }
 }

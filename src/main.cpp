@@ -1,7 +1,10 @@
 #include <cstdlib>
 #include <iostream>
+#include "timer.hpp"
 #include "hittable_list.hpp"
 #include "sphere.hpp"
+#include "lambertian.hpp"
+#include "metal.hpp"
 #include "camera.hpp"
 
 static void PrintUsage()
@@ -18,6 +21,10 @@ static unsigned int GetUIntArg(const char* const arg)
 
 int main(int argc, char* argv[])
 {
+    using namespace RT;
+
+    Timer executionTimer{};
+
     if (argc != 4) {
         PrintUsage();
         return EXIT_FAILURE;
@@ -34,14 +41,29 @@ int main(int argc, char* argv[])
 
     std::cout << "Raytracing [" << imageWidth << "x" << imageHeight << "] image to file: " << filename << std::endl;
 
-    RT::HittableList world;
-    world.Add<RT::Sphere>(RT::Point3{0.0f, 0.0f, -1.0f}, 0.5f);
-    world.Add<RT::Sphere>(RT::Point3{0.0f, -100.5f, -1.0f}, 100.0f);
+    HittableList world;
+    // Ground sphere
+    world.Add<Sphere>(Point3{0.0f, -100.5f, -1.5f}, 100.0f, std::make_unique<Lambertian>(Color{0.8f, 0.8f, 0.0f}));
+    // Center sphere
+    world.Add<Sphere>(Point3{0.0f, 0.0f, -1.5f}, 0.5f, std::make_unique<Lambertian>(Color{0.7f, 0.3f, 0.3f}));
+    // Left sphere
+    world.Add<Sphere>(Point3{-1.0f, 0.0f, -1.5f}, 0.5f, std::make_unique<Metal>(Color{1.0f, 1.0f, 1.0f}, 0.3f));
+    // Right sphere
+    world.Add<Sphere>(Point3{1.0f, 0.0f, -1.5f}, 0.5f, std::make_unique<Metal>(Color{0.8f, 0.6f, 0.2f}, 1.0f));
 
-    RT::Camera camera{imageWidth, imageHeight, RT::Point3{0.0f}};
+    Camera camera{imageWidth, imageHeight, Point3{0.0f}};
 
     if (!camera.Render(filename, world)) {
         return EXIT_FAILURE;
+    }
+
+    const double timeTaken = executionTimer.Peek();
+
+    if (timeTaken < 1.0) {
+        std::cout << "Time taken: " << (timeTaken * 60.0) << " sec" << std::endl;
+    }
+    else {
+        std::cout << "Time taken: " << timeTaken << " min" << std::endl;
     }
 
     return EXIT_SUCCESS;
