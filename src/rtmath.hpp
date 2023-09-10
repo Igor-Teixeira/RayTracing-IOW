@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <limits>
+#include <algorithm>
 #include <numbers>
 
 namespace RT
@@ -81,6 +82,15 @@ namespace RT
     inline const Vec3 Reflect(const Vec3& v, const Vec3& n)
     {
         return v - 2.0f * Dot(v, n) * n;
+    }
+
+    inline const Vec3 Refract(const Vec3& incident, const Vec3& normal, float refractionRatio)
+    {
+        const float cosTheta = std::min(Dot(-incident, normal), 1.0f);
+        const Vec3 outPerpendicular = refractionRatio * (incident + cosTheta * normal);
+        const Vec3 outParallel = -std::sqrt(std::fabs(1.0f - LengthSquared(outPerpendicular))) * normal;
+
+        return outPerpendicular + outParallel;
     }
 
     class Ray

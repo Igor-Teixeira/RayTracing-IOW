@@ -5,6 +5,7 @@
 #include "sphere.hpp"
 #include "lambertian.hpp"
 #include "metal.hpp"
+#include "dielectric.hpp"
 #include "camera.hpp"
 
 static void PrintUsage()
@@ -43,13 +44,13 @@ int main(int argc, char* argv[])
 
     HittableList world;
     // Ground sphere
-    world.Add<Sphere>(Point3{0.0f, -100.5f, -1.5f}, 100.0f, std::make_unique<Lambertian>(Color{0.8f, 0.8f, 0.0f}));
+    world.Add<Sphere>(Point3{0.0f, -100.501f, -1.2f}, 100.0f, std::make_unique<Lambertian>(Color{0.5f, 0.5f, 0.5f}));
     // Center sphere
-    world.Add<Sphere>(Point3{0.0f, 0.0f, -1.5f}, 0.5f, std::make_unique<Lambertian>(Color{0.7f, 0.3f, 0.3f}));
+    world.Add<Sphere>(Point3{0.0f, 0.0f, -1.2f}, 0.5f, std::make_unique<Dielectric>(1.5f));
     // Left sphere
-    world.Add<Sphere>(Point3{-1.0f, 0.0f, -1.5f}, 0.5f, std::make_unique<Metal>(Color{1.0f, 1.0f, 1.0f}, 0.3f));
+    world.Add<Sphere>(Point3{-1.05f, 0.0f, -1.2f}, 0.5f, std::make_unique<Metal>(Color{0.3f, 0.3f, 0.7f}, 0.0f));
     // Right sphere
-    world.Add<Sphere>(Point3{1.0f, 0.0f, -1.5f}, 0.5f, std::make_unique<Metal>(Color{0.8f, 0.6f, 0.2f}, 1.0f));
+    world.Add<Sphere>(Point3{1.05f, 0.0f, -1.2f}, 0.5f, std::make_unique<Lambertian>(Color{0.8f, 0.6f, 0.2f}));
 
     Camera camera{imageWidth, imageHeight, Point3{0.0f}};
 
