@@ -8,23 +8,35 @@
 
 namespace RT
 {
-    Camera::Camera(unsigned int imageWidth, unsigned int imageHeight, const Point3& position)
-        : m_ImageWidth(imageWidth), m_ImageHeight(imageHeight), m_Position(position), m_SamplesPerPixel(100)
+    Camera::Camera(const CameraSettings& settings)
+        : m_ImageWidth(settings.imageWidth),
+        m_ImageHeight(settings.imageHeight),
+        m_SamplesPerPixel(settings.samples),
+        m_MaxDepth(settings.maxTracingDepth),
+        m_Position(settings.position),
+        m_LookAt(settings.lookAt),
+        m_VerticalFOV(settings.verticalFOV)
     {
-        m_MaxDepth = 50;
+        const float focalLength = Length(m_Position - m_LookAt);
 
-        const float focalLength = 1.0f;
-        const float viewportHeight = 2.0f;
-        const float viewportWidth = viewportHeight * (static_cast<float>(imageWidth) / imageHeight);
+        const float theta = ToRadians(m_VerticalFOV);
+        const float h = std::tan(theta / 2.0f);
+        const float viewportHeight = 2.0f * h * focalLength;
 
-        const Vec3 viewportU{viewportWidth, 0.0f, 0.0f};
-        const Vec3 viewportV{0.0f, -viewportHeight, 0.0f};
+        const float viewportWidth = viewportHeight * (static_cast<float>(m_ImageWidth) / m_ImageHeight);
 
-        m_PixelDeltaU = viewportU / static_cast<float>(imageWidth);
-        m_PixelDeltaV = viewportV / static_cast<float>(imageHeight);
+        const Vec3 w = Normalize(m_Position - m_LookAt);
+        const Vec3 u = Normalize(Cross(Vec3{0.0f, 1.0f, 0.0f}, w));
+        const Vec3 v = Cross(w, u);
+
+        const Vec3 viewportU = viewportWidth * u;
+        const Vec3 viewportV = viewportHeight * -v;
+
+        m_PixelDeltaU = viewportU / static_cast<float>(m_ImageWidth);
+        m_PixelDeltaV = viewportV / static_cast<float>(m_ImageHeight);
 
         const Vec3 viewportUpperLeft =
-            m_Position - Vec3(0.0f, 0.0f, focalLength) - (viewportU * 0.5f) - (viewportV * 0.5f);
+            m_Position - (focalLength * w) - (viewportU * 0.5f) - (viewportV * 0.5f);
 
         m_Pixel00Location = viewportUpperLeft + (m_PixelDeltaU + m_PixelDeltaV) * 0.5f;
     }

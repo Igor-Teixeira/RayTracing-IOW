@@ -43,6 +43,12 @@ namespace RT
     inline const Vec3 operator*(float lhs, Vec3 rhs) { rhs *= lhs; return rhs; }
     inline const Vec3 operator/(float lhs, Vec3 rhs) { rhs /= lhs; return rhs; }
 
+    inline float ToRadians(float degrees)
+    {
+        constexpr float factor = std::numbers::pi_v<float> / 180.0f;
+        return degrees * factor;
+    }
+
     inline float LengthSquared(const Vec3& v)
     {
         return v.x * v.x + v.y * v.y + v.z * v.z;
@@ -66,6 +72,11 @@ namespace RT
     inline float Dot(const Vec3& a, const Vec3& b)
     {
         return a.x * b.x + a.y * b.y + a.z * b.z;
+    }
+
+    inline const Vec3 Cross(const Vec3& a, const Vec3& b)
+    {
+        return Vec3{a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
     }
 
     inline const Vec3 Hadamard(const Vec3& a, const Vec3& b)

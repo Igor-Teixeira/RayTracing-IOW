@@ -4,10 +4,22 @@
 
 namespace RT
 {
+    struct CameraSettings
+    {
+        unsigned int imageWidth;
+        unsigned int imageHeight;
+        unsigned int samples;
+        int maxTracingDepth;
+
+        Point3 position;
+        Point3 lookAt;
+        float verticalFOV;
+    };
+
     class Camera
     {
     public:
-        Camera(unsigned int imageWidth, unsigned int imageHeight, const Point3& position);
+        Camera(const CameraSettings& settings);
         bool Render(const char* filename, const Hittable& world);
     
     private:
@@ -21,11 +33,12 @@ namespace RT
     private:
         unsigned int m_ImageWidth;
         unsigned int m_ImageHeight;
-
-        Point3 m_Position;
-
         unsigned int m_SamplesPerPixel;
         int m_MaxDepth;
+
+        Point3 m_Position;
+        Point3 m_LookAt;
+        float m_VerticalFOV;
 
         Point3 m_Pixel00Location;
         Vec3 m_PixelDeltaU;
