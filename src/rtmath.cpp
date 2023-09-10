@@ -33,11 +33,9 @@ namespace RT
     {
         while (true) {
             const Vec3 v = RandomVec3(-1.0f, 1.0f);
-            const float lengthSquared = LengthSquared(v);
 
-            if (lengthSquared < 1.0f) {
-                const float factor = 1.0f / std::sqrt(lengthSquared);
-                return v * factor;
+            if (LengthSquared(v) < 1.0f) {
+                return v;
             }
         }
     }
@@ -51,6 +49,16 @@ namespace RT
         }
         else {
             return -direction;
+        }
+    }
+
+    const Vec3 RandomVec3InUnitDisk()
+    {
+        while (true) {
+            const Vec3 v = Vec3{RandomFloat(-1.0f, 1.0f), RandomFloat(-1.0f, 1.0f), 0.0f};
+            if (LengthSquared(v) < 1.0f) {
+                return v;
+            }
         }
     }
 }

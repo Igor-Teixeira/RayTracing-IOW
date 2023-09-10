@@ -14,6 +14,9 @@ namespace RT
         Point3 position;
         Point3 lookAt;
         float verticalFOV;
+
+        float defocusAngle;
+        float focalDistance;
     };
 
     class Camera
@@ -29,6 +32,7 @@ namespace RT
         float LinearToGamma(float linear);
 
         const Vec3 PixelSampleSquare();
+        const Vec3 DefocusDiskSample();
 
     private:
         unsigned int m_ImageWidth;
@@ -43,5 +47,9 @@ namespace RT
         Point3 m_Pixel00Location;
         Vec3 m_PixelDeltaU;
         Vec3 m_PixelDeltaV;
+
+        float m_DefocusAngle;
+        Vec3 m_DefocusDiskU;
+        Vec3 m_DefocusDiskV;
     };
 }

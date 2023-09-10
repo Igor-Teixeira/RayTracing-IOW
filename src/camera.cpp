@@ -15,13 +15,12 @@ namespace RT
         m_MaxDepth(settings.maxTracingDepth),
         m_Position(settings.position),
         m_LookAt(settings.lookAt),
-        m_VerticalFOV(settings.verticalFOV)
+        m_VerticalFOV(settings.verticalFOV),
+        m_DefocusAngle(settings.defocusAngle)
     {
-        const float focalLength = Length(m_Position - m_LookAt);
-
         const float theta = ToRadians(m_VerticalFOV);
         const float h = std::tan(theta / 2.0f);
-        const float viewportHeight = 2.0f * h * focalLength;
+        const float viewportHeight = 2.0f * h * settings.focalDistance;
 
         const float viewportWidth = viewportHeight * (static_cast<float>(m_ImageWidth) / m_ImageHeight);
 
@@ -36,9 +35,13 @@ namespace RT
         m_PixelDeltaV = viewportV / static_cast<float>(m_ImageHeight);
 
         const Vec3 viewportUpperLeft =
-            m_Position - (focalLength * w) - (viewportU * 0.5f) - (viewportV * 0.5f);
+            m_Position - (settings.focalDistance * w) - (viewportU * 0.5f) - (viewportV * 0.5f);
 
         m_Pixel00Location = viewportUpperLeft + (m_PixelDeltaU + m_PixelDeltaV) * 0.5f;
+
+        const float defocusRadius = settings.focalDistance * std::tan(ToRadians(m_DefocusAngle / 2.0f));
+        m_DefocusDiskU = u * defocusRadius;
+        m_DefocusDiskV = v * defocusRadius;
     }
 
     bool Camera::Render(const char* filename, const Hittable& world)
@@ -120,7 +123,7 @@ namespace RT
         
         const Vec3 pixelSample = pixelCenter + PixelSampleSquare();
 
-        const Vec3 rayOrigin = m_Position;
+        const Vec3 rayOrigin = (m_DefocusAngle <= 0.0f) ? m_Position : DefocusDiskSample();
         const Vec3 rayDirection = pixelSample - rayOrigin;
 
         return Ray{rayOrigin, rayDirection};
@@ -131,5 +134,11 @@ namespace RT
         const float px = -0.5f + RandomFloat();
         const float py = -0.5f + RandomFloat();
         return (px * m_PixelDeltaU) + (py * m_PixelDeltaV);
+    }
+
+    const Vec3 Camera::DefocusDiskSample()
+    {
+        const Vec3 p = RandomVec3InUnitDisk();
+        return m_Position + (p.x * m_DefocusDiskU) + (p.y * m_DefocusDiskV);
     }
 }

@@ -155,4 +155,6 @@ namespace RT
 
     const Vec3 RandomVec3InUnitSphere();
     const Vec3 RandomVec3InHemisphere(const Vec3& normal);
+
+    const Vec3 RandomVec3InUnitDisk();
 }

@@ -55,11 +55,16 @@ int main(int argc, char* argv[])
     CameraSettings cameraSettings;
     cameraSettings.imageWidth = imageWidth;
     cameraSettings.imageHeight = imageHeight;
+
     cameraSettings.samples = 100;
     cameraSettings.maxTracingDepth = 50;
-    cameraSettings.position = Vec3{0.0f, 0.0f, 1.3f};
+
+    cameraSettings.position = Vec3{-2.0f, 2.0f, 2.0f};
     cameraSettings.lookAt = Vec3{0.0f, 0.0f, 0.0f};
-    cameraSettings.verticalFOV = 90.0f;
+    cameraSettings.verticalFOV = 20.0f;
+
+    cameraSettings.defocusAngle = 4.0f;
+    cameraSettings.focalDistance = 3.4f;
 
     Camera camera{cameraSettings};
 
