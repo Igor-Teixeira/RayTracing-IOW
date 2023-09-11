@@ -9,8 +9,6 @@ endif()
 # Setup build types
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type")
 
-set(CMAKE_DEFAULT_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Ninja default build type")
-
 get_property(GEN_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(GEN_MULTI_CONFIG)
     set(RTIOW_BUILD_TYPES Debug Release)

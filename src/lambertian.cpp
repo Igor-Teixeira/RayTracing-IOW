@@ -7,6 +7,8 @@ namespace RT
 {
     bool Lambertian::Scatter(const Ray& incident, const HitInfo& hitInfo, Color* attenuation, Ray* scattered)
     {
+        (void)incident;
+
         Vec3 scatterDirection = hitInfo.normal + Normalize(RandomVec3InUnitSphere());
 
         while (NearZero(scatterDirection)) {
